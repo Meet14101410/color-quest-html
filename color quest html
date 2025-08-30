@@ -1,0 +1,84 @@
+Here’s a super-short, single-file **HTML** for **Color Quest** (guess the color from squares). Just paste into an `.html` file and open:
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Color Quest</title>
+<style>
+  body{font-family:system-ui,Arial;margin:0;display:grid;place-items:center;height:100vh;background:#f5f7fb}
+  .card{background:#fff;padding:18px 20px;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.08);width:min(420px,92vw);text-align:center}
+  h1{margin:0 0 8px;font-size:24px}
+  .bar{display:flex;justify-content:space-between;margin:8px 0 14px;font-weight:700}
+  .target{font-size:18px;margin:8px 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .cell{height:70px;border-radius:12px;cursor:pointer;transition:transform .1s,filter .2s}
+  .cell:active{transform:scale(.96)}
+  button{margin-top:16px;border:0;background:#111;color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+  .msg{min-height:22px;margin-top:8px;font-weight:600}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎨 Color Quest</h1>
+    <div class="bar"><span>Score: <b id="score">0</b></span><span>Time: <b id="time">30</b>s</span></div>
+    <div class="target">Find: <b id="need">—</b></div>
+    <div class="grid" id="grid"></div>
+    <div class="msg" id="msg"></div>
+    <button id="play">Play / Restart</button>
+  </div>
+
+<script>
+(() => {
+  const COLORS = [
+    ["Red","#e74c3c"],["Blue","#3498db"],["Green","#2ecc71"],["Yellow","#f1c40f"],
+    ["Purple","#9b59b6"],["Orange","#e67e22"],["Pink","#ff6bcb"],["Teal","#1abc9c"],
+    ["Brown","#8e5a3c"],["Gray","#95a5a6"],["Black","#111111"],["White","#ffffff"]
+  ];
+  const N = 6; // squares per round
+  const grid = document.getElementById("grid"),
+        need = document.getElementById("need"),
+        msg  = document.getElementById("msg"),
+        scEl = document.getElementById("score"),
+        tmEl = document.getElementById("time"),
+        play = document.getElementById("play");
+  let targetIdx=0, score=0, time=30, tick=null, live=false;
+
+  function rand(n){return Math.floor(Math.random()*n)}
+  function shuffle(a){for(let i=a.length-1;i;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+  function sample(arr,k){return shuffle([...arr]).slice(0,k)}
+  function newRound(){
+    const picks = sample(COLORS,N);
+    targetIdx = rand(picks.length);
+    need.textContent = picks[targetIdx][0];
+    grid.innerHTML = "";
+    picks.forEach(([name,hex],i)=>{
+      const d = document.createElement("div");
+      d.className="cell";
+      d.style.background = hex;
+      d.style.filter = (hex==="#ffffff") ? "drop-shadow(0 0 1px #ccc)" : "";
+      d.onclick = () => {
+        if(!live) return;
+        if(i===targetIdx){ score++; scEl.textContent=score; msg.textContent="✅ Correct!"; newRound(); }
+        else { msg.textContent="❌ Try again!"; score=Math.max(0,score-1); scEl.textContent=score; }
+      };
+      grid.appendChild(d);
+    });
+  }
+  function start(){
+    score=0; scEl.textContent=0; time=30; tmEl.textContent=time; msg.textContent="";
+    live=true; newRound();
+    clearInterval(tick);
+    tick=setInterval(()=>{
+      if(--time<=0){ tmEl.textContent=0; clearInterval(tick); live=false; msg.textContent="🏁 Time up! Final Score: "+score; }
+      else tmEl.textContent=time;
+    },1000);
+  }
+  play.onclick=start;
+})();
+</script>
+</body>
+</html>
+```
