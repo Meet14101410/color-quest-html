@@ -1,0 +1,60 @@
+Here’s a **short standalone JavaScript** snippet for **Color Quest** (only the logic, no HTML/CSS):
+
+```javascript
+(() => {
+  const COLORS = [
+    ["Red","#e74c3c"],["Blue","#3498db"],["Green","#2ecc71"],
+    ["Yellow","#f1c40f"],["Purple","#9b59b6"],["Orange","#e67e22"],
+    ["Pink","#ff6bcb"],["Teal","#1abc9c"],["Brown","#8e5a3c"],
+    ["Gray","#95a5a6"],["Black","#111111"],["White","#ffffff"]
+  ];
+  const N = 6;
+  const grid = document.getElementById("grid"),
+        need = document.getElementById("need"),
+        msg  = document.getElementById("msg"),
+        scEl = document.getElementById("score"),
+        tmEl = document.getElementById("time"),
+        play = document.getElementById("play");
+  let target=0, score=0, time=30, live=false, timer=null;
+
+  const rand = n => Math.floor(Math.random()*n);
+  const shuffle = arr => arr.sort(()=>Math.random()-.5);
+  const sample = (arr,k)=>shuffle([...arr]).slice(0,k);
+
+  function newRound(){
+    const picks=sample(COLORS,N); target=rand(N);
+    need.textContent=picks[target][0]; grid.innerHTML="";
+    picks.forEach(([name,hex],i)=>{
+      const d=document.createElement("div");
+      d.className="cell"; d.style.background=hex;
+      if(hex==="#ffffff") d.style.filter="drop-shadow(0 0 1px #ccc)";
+      d.onclick=()=>{ if(!live) return;
+        if(i===target){score++;msg.textContent="✅";newRound();}
+        else{score=Math.max(0,score-1);msg.textContent="❌";}
+        scEl.textContent=score;
+      };
+      grid.appendChild(d);
+    });
+  }
+
+  function start(){
+    score=0;time=30;live=true;msg.textContent="";scEl.textContent=0;tmEl.textContent=time;
+    clearInterval(timer); newRound();
+    timer=setInterval(()=>{tmEl.textContent=--time;
+      if(time<=0){clearInterval(timer);live=false;msg.textContent="🏁 Score: "+score;}
+    },1000);
+  }
+
+  play.onclick=start;
+})();
+```
+
+This will work if your HTML has:
+
+* A container with `id="grid"` for the squares
+* Elements with `id="need"`, `id="msg"`, `id="score"`, `id="time"`
+* A button with `id="play"`
+
+---
+
+Want me to send a **tiny HTML skeleton** to go with this so you can plug it in directly?
